@@ -11,6 +11,9 @@ export const GestureLayer: React.FC = () => {
   const down = (zone: 'notifications' | 'control') => (e: React.PointerEvent) => {
     if (locked || shade) return;
     start.current = { y: e.clientY, zone };
+    // Capture the pointer so the drag survives outside the 40px strip —
+    // otherwise pointerleave cancels before the 26px threshold is crossed.
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
   const move = (e: React.PointerEvent) => {
     if (!start.current) return;
