@@ -1,10 +1,132 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, Clock, User, Grid, Voicemail, Phone, Info, Delete, Play, Pause } from 'lucide-react';
+import { Star, Clock, User, Grid, Voicemail, Phone, Delete, Play, Pause, MicOff, Grid3x3, Volume2, UserPlus, Video, Users } from 'lucide-react';
 import { useOS } from '../system/OSContext';
 import { TabBar } from '../ui/kit';
 
 const CONTACTS = ['Alex Morgan', 'Sarah Connor', 'John Doe', 'Marie Curie', 'Dave Kim', 'Lena Park'];
+
+// One canonical avatar per contact — recents/favorites/contacts/call all share it.
+const avatarFor = (name: string) => {
+  const i = CONTACTS.indexOf(name);
+  return i >= 0 ? `https://i.pravatar.cc/400?img=${i + 21}` : null;
+};
+const initialsOf = (name: string) =>
+  name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+const fmt = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+
+const CallAction: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  active?: boolean;
+  onPress?: () => void;
+}> = ({ icon: Icon, label, active, onPress }) => (
+  <motion.button
+    whileTap={{ scale: 0.88 }}
+    onClick={onPress}
+    aria-label={label}
+    aria-pressed={active}
+    className="flex flex-col items-center gap-2"
+  >
+    <div
+      className={`w-[68px] h-[68px] rounded-full flex items-center justify-center border backdrop-blur-xl transition-colors duration-150 ${
+        active
+          ? 'bg-white text-black border-white'
+          : 'bg-white/10 text-white border-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]'
+      }`}
+    >
+      <Icon size={27} strokeWidth={1.8} />
+    </div>
+    <span className="text-[12px] font-medium text-white/85">{label}</span>
+  </motion.button>
+);
+
+// iOS-style immersive call screen: full-bleed contact art, ringing state that
+// connects into a live timer, glass action grid, red end button.
+const CallScreen: React.FC<{ who: string; onEnd: () => void }> = ({ who, onEnd }) => {
+  const { t } = useOS();
+  const photo = avatarFor(who);
+  const [connected, setConnected] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+  const [muted, setMuted] = useState(false);
+  const [speaker, setSpeaker] = useState(false);
+
+  useEffect(() => {
+    const connect = setTimeout(() => setConnected(true), 1800);
+    return () => clearTimeout(connect);
+  }, []);
+
+  useEffect(() => {
+    if (!connected) return;
+    const iv = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(iv);
+  }, [connected]);
+
+  return (
+    <motion.div
+      key="call-screen"
+      initial={{ opacity: 0, scale: 1.04 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 1.04, transition: { duration: 0.18 } }}
+      className="absolute inset-0 z-50 bg-black flex flex-col items-center overflow-hidden"
+    >
+      {/* full-bleed backdrop: contact photo or gradient for unknown numbers */}
+      {photo ? (
+        <>
+          <img src={photo} alt="" className="absolute inset-0 w-full h-full object-cover saturate-110" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/85" />
+        </>
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#06283d] via-[#0a1220] to-black" />
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ background: 'radial-gradient(120% 60% at 50% 0%, rgba(0,194,255,0.22), transparent 60%)' }}
+          />
+        </>
+      )}
+
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-end pb-24 w-full">
+        {!photo && (
+          <div className="w-24 h-24 rounded-full bg-white/10 border border-white/20 backdrop-blur-md flex items-center justify-center mb-5">
+            <span className="text-3xl font-semibold text-white/90">{initialsOf(who)}</span>
+          </div>
+        )}
+        <h2 className="text-[34px] leading-tight font-semibold text-white drop-shadow-md px-6 text-center">{who}</h2>
+        <p className="text-white/75 mt-1.5 text-[17px] font-medium tabular-nums">
+          {connected ? fmt(elapsed) : t('phone.calling')}
+        </p>
+      </div>
+
+      <div className="relative z-10 w-full px-10 pb-4">
+        <div className="grid grid-cols-3 gap-y-7 place-items-center mb-9">
+          <CallAction icon={MicOff} label={t('phone.mute')} active={muted} onPress={() => setMuted((m) => !m)} />
+          <CallAction icon={Grid3x3} label={t('phone.keypad')} />
+          <CallAction icon={Volume2} label={t('phone.speaker')} active={speaker} onPress={() => setSpeaker((s) => !s)} />
+          <CallAction icon={UserPlus} label={t('phone.addCall')} />
+          <CallAction icon={Video} label={t('phone.facetime')} />
+          <CallAction icon={Users} label={t('phone.contactsBtn')} />
+        </div>
+        <div className="flex justify-center pb-6">
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={onEnd}
+            aria-label={t('phone.end')}
+            className="w-[72px] h-[72px] rounded-full bg-[#FF3B30] flex items-center justify-center text-white shadow-[0_12px_32px_rgba(255,59,48,0.45)] border border-red-400/60"
+          >
+            <Phone size={30} className="rotate-[135deg]" fill="white" />
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
 
 // All five tabs now have content (favorites/contacts/voicemail were dead in
 // the original). Keypad dials, call screen connects, voicemail plays.
@@ -21,35 +143,7 @@ const PhoneApp: React.FC = () => {
     <div className="h-full w-full flex flex-col">
       <AnimatePresence mode="wait">
         {calling ? (
-          <motion.div
-            key="call-screen"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-gray-900 flex flex-col items-center pt-24 pb-12"
-          >
-            <img
-              src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-30 blur-xl saturate-150"
-            />
-            <div className="relative z-10 flex flex-col items-center flex-1">
-              <div className="w-24 h-24 rounded-full overflow-hidden mb-6 shadow-2xl border-2 border-white/20">
-                <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200" alt="" className="w-full h-full object-cover" />
-              </div>
-              <h2 className="text-3xl font-bold text-white drop-shadow-md">{calling}</h2>
-              <p className="text-white/70 mt-1">{t('phone.calling')}</p>
-            </div>
-            <div className="relative z-10 flex gap-8">
-              <button
-                onClick={() => setCalling(null)}
-                aria-label="End call"
-                className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center text-white shadow-lg shadow-red-500/40 border border-red-400 active:scale-90 transition-transform"
-              >
-                <Phone size={28} className="rotate-[135deg]" />
-              </button>
-            </div>
-          </motion.div>
+          <CallScreen who={calling} onEnd={() => setCalling(null)} />
         ) : (
           <div className="flex-1 flex flex-col min-h-0">
             {tab === 'keypad' && (
@@ -99,7 +193,7 @@ const PhoneApp: React.FC = () => {
                   <div key={i} className="flex items-center justify-between py-4 border-b border-gray-100/50">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?img=${i + 1}`} alt="" />
+                        <img src={avatarFor(CONTACTS[i % CONTACTS.length])!} alt="" />
                       </div>
                       <div>
                         <div className={`font-bold text-lg ${i === 0 ? 'text-red-500' : 'text-black/90'}`}>{CONTACTS[i % CONTACTS.length]}</div>
@@ -127,7 +221,7 @@ const PhoneApp: React.FC = () => {
                       onClick={() => setCalling(c)}
                       className="bg-white rounded-[24px] p-5 flex flex-col items-center gap-3 shadow-sm border border-gray-100 active:scale-[0.97] transition-transform"
                     >
-                      <img src={`https://i.pravatar.cc/150?img=${i + 12}`} alt="" className="w-16 h-16 rounded-full object-cover bg-gray-200" />
+                      <img src={avatarFor(c)!} alt="" className="w-16 h-16 rounded-full object-cover bg-gray-200" />
                       <span className="font-semibold text-black/80 text-sm">{c}</span>
                       <Star size={16} className="text-yellow-400 fill-yellow-400" />
                     </button>
@@ -145,7 +239,7 @@ const PhoneApp: React.FC = () => {
                     onClick={() => setCalling(c)}
                     className="w-full flex items-center gap-4 py-4 border-b border-gray-100/50 text-left active:opacity-70"
                   >
-                    <img src={`https://i.pravatar.cc/100?img=${i + 21}`} alt="" className="w-12 h-12 rounded-full bg-gray-200" />
+                    <img src={avatarFor(c)!} alt="" className="w-12 h-12 rounded-full bg-gray-200" />
                     <div>
                       <div className="font-bold text-lg text-black/90">{c}</div>
                       <div className="text-sm text-black/50">{t('phone.mobile')}</div>

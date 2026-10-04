@@ -54,7 +54,10 @@ const AppSlot: React.FC<{ id: AppID; index: number }> = ({ id, index }) => {
         opacity: 0.95,
       }
     : null;
-  const hidden: Geo = { ...full, scale: 0.92, opacity: 0 };
+  // Parked apps sit on their icon, invisible — NOT back at near-fullscreen.
+  // A full-size hidden target re-morphed the closing window toward the bezel
+  // right after finishClosing, which looked like the app was reopening.
+  const hidden: Geo = icon ? { ...icon, opacity: 0 } : { ...full, scale: 0.92, opacity: 0 };
 
   const target: Geo = switcherOpen ? card : isActive ? full : isClosing ? icon ?? hidden : hidden;
   // Enter morph: start from the icon rect on first mount.
