@@ -1,14 +1,134 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useOS } from './OSContext';
 
-const WAVE_PATH = 'M0 20 C 30 4, 60 36, 90 20 C 120 4, 150 36, 180 20';
-
 // Boot sequence (HarmonyOS Next–inspired):
 //   1. brand splash — black screen, "Nyne" centered, "Powered by WaveOS" at the bottom
-//   2. OS reveal — the wave glyph draws itself in light, then the WaveOS wordmark rises
+//   2. OS reveal — a ring ("O") draws itself and fills in light, then morphs
+//      down into its slot inside the wordmark while "Wave" and "S" fade in
 const BRAND_MS = 1400;
-const TOTAL_MS = 3600;
+const TOTAL_MS = 4400;
+
+const OSReveal: React.FC<{ reduceMotion: boolean }> = ({ reduceMotion }) => {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const slotRef = useRef<HTMLSpanElement>(null);
+  const [d, setD] = useState<{ x: number; y: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const slot = slotRef.current;
+    if (!stage || !slot) return;
+    const sr = slot.getBoundingClientRect();
+    const br = stage.getBoundingClientRect();
+    setD({
+      x: br.left + br.width / 2 - (sr.left + sr.width / 2),
+      y: br.top + br.height / 2 - (sr.top + sr.height / 2),
+    });
+  }, []);
+
+  const dx = d?.x ?? 0;
+  const dy = d?.y ?? 0;
+
+  const ringT = reduceMotion
+    ? { duration: 0.25, delay: 0 }
+    : { duration: 1.15, ease: 'easeInOut' as const, delay: 0.15 };
+  // hold centered while the O draws, then morph into the wordmark slot
+  const morphT = reduceMotion
+    ? { duration: 0.3, times: [0, 0.5, 1] }
+    : { duration: 2.7, times: [0, 0.52, 0.85], ease: 'easeInOut' as const };
+  const lettersDelay = reduceMotion ? 0.15 : 2.05;
+  const oDelay = reduceMotion ? 0.2 : 2.5;
+
+  return (
+    <div ref={stageRef} className="absolute inset-0 flex items-center justify-center">
+      <div
+        className="flex items-baseline font-semibold tracking-tight text-white select-none"
+        style={{ fontSize: 42, lineHeight: 1 }}
+      >
+        <motion.span
+          initial={{ opacity: 0, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          transition={{ delay: lettersDelay, duration: 0.55, ease: 'easeOut' }}
+        >
+          Wave
+        </motion.span>
+
+        {/* the "O" — ring draws centered, fills, then morphs down into this slot */}
+        <span
+          ref={slotRef}
+          className="relative inline-flex items-end justify-center text-wave-cyan"
+          style={{ width: '0.78em', height: '1em' }}
+        >
+          <motion.span
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: oDelay, duration: 0.4 }}
+            style={{ fontSize: '1em', lineHeight: 1 }}
+          >
+            O
+          </motion.span>
+          {d !== null && (
+            <motion.div
+              className="absolute flex items-center justify-center"
+              style={{ left: '50%', top: '56%', width: 34, height: 34, marginLeft: -17, marginTop: -17 }}
+              initial={{ x: dx, y: dy, scale: 3.6, opacity: 1 }}
+              animate={{ x: [dx, dx, 0], y: [dy, dy, 0], scale: [3.6, 3.6, 1], opacity: [1, 1, 0] }}
+              transition={morphT}
+            >
+              {/* halo while centered */}
+              <motion.div
+                className="absolute -inset-8 rounded-full"
+                style={{ background: 'radial-gradient(closest-side, rgba(0,194,255,0.25), transparent 70%)' }}
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1, 1, 0.8] }}
+                transition={reduceMotion ? { duration: 0.4 } : { duration: 2.4, times: [0, 0.35, 0.6, 1], ease: 'easeOut' }}
+              />
+              {/* soft fill that blooms inside the ring */}
+              <motion.div
+                className="absolute rounded-full"
+                style={{ inset: 5, background: 'radial-gradient(closest-side, rgba(0,194,255,0.5), rgba(0,194,255,0.12))' }}
+                initial={{ opacity: 0, scale: 0.4 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={reduceMotion ? { duration: 0.25 } : { delay: 0.75, duration: 0.6, ease: 'easeOut' }}
+              />
+              <motion.svg
+                width="34"
+                height="34"
+                viewBox="0 0 34 34"
+                className="relative"
+                initial={{ rotate: -150 }}
+                animate={{ rotate: 0 }}
+                transition={reduceMotion ? { duration: 0.25 } : { duration: 1.3, ease: 'easeOut' }}
+              >
+                <motion.circle
+                  cx="17"
+                  cy="17"
+                  r="14.5"
+                  fill="none"
+                  stroke="#00C2FF"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  initial={{ pathLength: 0 }}
+                  animate={{ pathLength: 1 }}
+                  transition={ringT}
+                />
+              </motion.svg>
+            </motion.div>
+          )}
+        </span>
+
+        <motion.span
+          className="text-wave-cyan"
+          initial={{ opacity: 0, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, filter: 'blur(0px)' }}
+          transition={{ delay: lettersDelay + 0.12, duration: 0.55, ease: 'easeOut' }}
+        >
+          S
+        </motion.span>
+      </div>
+    </div>
+  );
+};
 
 export const BootScreen: React.FC = () => {
   const { setBooted, reduceMotion } = useOS();
@@ -16,7 +136,7 @@ export const BootScreen: React.FC = () => {
 
   useEffect(() => {
     const t1 = setTimeout(() => setStage('os'), reduceMotion ? 500 : BRAND_MS);
-    const t2 = setTimeout(() => setBooted(true), reduceMotion ? 900 : TOTAL_MS);
+    const t2 = setTimeout(() => setBooted(true), reduceMotion ? 1000 : TOTAL_MS);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -25,7 +145,7 @@ export const BootScreen: React.FC = () => {
 
   return (
     <motion.div
-      className="absolute inset-0 z-[700] bg-black flex flex-col items-center justify-center overflow-hidden"
+      className="absolute inset-0 z-[700] bg-black overflow-hidden"
       exit={{ opacity: 0, transition: { duration: 0.55, ease: 'easeOut' } }}
     >
       <AnimatePresence mode="wait">
@@ -61,54 +181,12 @@ export const BootScreen: React.FC = () => {
         ) : (
           <motion.div
             key="os"
-            className="flex flex-col items-center"
+            className="absolute inset-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-            <div className="relative">
-              {/* halo that blooms as the wave completes */}
-              <motion.div
-                className="absolute -inset-10 rounded-full"
-                style={{ background: 'radial-gradient(closest-side, rgba(0,194,255,0.22), transparent 70%)' }}
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: reduceMotion ? 0 : 0.9, duration: 0.8, ease: 'easeOut' }}
-              />
-              <motion.svg width="200" height="46" viewBox="0 0 180 40" className="relative">
-                {/* soft under-glow */}
-                <motion.path
-                  d={WAVE_PATH}
-                  fill="none"
-                  stroke="rgba(0,194,255,0.35)"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: reduceMotion ? 0.2 : 1.15, ease: 'easeInOut', delay: 0.1 }}
-                />
-                <motion.path
-                  d={WAVE_PATH}
-                  fill="none"
-                  stroke="#00C2FF"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: reduceMotion ? 0.2 : 1.15, ease: 'easeInOut', delay: 0.1 }}
-                />
-              </motion.svg>
-            </div>
-            <motion.div
-              className="mt-8"
-              initial={{ opacity: 0, y: 8, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ delay: reduceMotion ? 0.1 : 0.95, duration: 0.55, ease: 'easeOut' }}
-            >
-              <span className="text-white font-semibold tracking-tight select-none" style={{ fontSize: 42, lineHeight: 1 }}>
-                Wave<span className="text-wave-cyan">OS</span>
-              </span>
-            </motion.div>
+            <OSReveal reduceMotion={reduceMotion} />
           </motion.div>
         )}
       </AnimatePresence>
