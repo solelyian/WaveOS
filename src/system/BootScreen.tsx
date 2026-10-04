@@ -1,5 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Wordmark } from '../ui/kit';
 import { useOS } from './OSContext';
 
 // Boot sequence (HarmonyOS Next–inspired):
@@ -170,12 +171,10 @@ export const BootScreen: React.FC = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.35, duration: 0.5 }}
             >
-              <svg width="16" height="10" viewBox="0 0 16 10" fill="none">
-                <path d="M1 5 C 3.5 1.5, 6 8.5, 8 5 C 10 1.5, 12.5 8.5, 15 5" stroke="#00C2FF" strokeWidth="1.4" strokeLinecap="round" />
-              </svg>
-              <span className="text-white/40 text-[11px] font-medium tracking-[0.22em] uppercase select-none">
-                Powered by WaveOS
+              <span className="text-white/40 text-[11px] font-medium tracking-[0.18em] uppercase select-none">
+                Powered by
               </span>
+              <Wordmark size={15} className="opacity-90" />
             </motion.div>
           </motion.div>
         ) : (
