@@ -15,6 +15,22 @@ body,
   -webkit-tap-highlight-color: transparent;
 }
 
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Keyboard navigation gets a visible Wave-cyan focus ring — mouse/touch
+   stays clean thanks to :focus-visible. */
+:focus-visible {
+  outline: 2px solid #00c2ff;
+  outline-offset: 2px;
+}
+button:focus:not(:focus-visible),
+[role='button']:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

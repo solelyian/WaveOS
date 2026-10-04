@@ -21,16 +21,26 @@ export const RADIUS = {
   xl: 'rounded-[36px]',
 } as const;
 
-// Glass elevations. `low` for chrome over busy surfaces (stronger blur + scrim
-// for legibility), `high` for cards/sheets. `button` for controls.
+// Glass elevations — "Liquid Glass": translucent white material over a strong
+// backdrop blur, specular top edge (inset highlight), thin bright border and
+// deep ambient shadow. `low` for chrome over the wallpaper, `darkHigh` for
+// tiles on dark apps/shades, `high` for bars on light apps, `button`/`tile`
+// for controls. `button` stays legible on both themes.
 export const GLASS = {
-  low: 'bg-black/30 border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_10px_40px_rgba(0,0,0,0.25)] backdrop-blur-[14px] backdrop-saturate-[150%]',
-  high: 'bg-white/85 border border-white/70 shadow-[0_4px_20px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-[10px] backdrop-saturate-[140%]',
-  darkHigh: 'bg-black/40 border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_10px_40px_rgba(0,0,0,0.35)] backdrop-blur-[14px] backdrop-saturate-[150%]',
+  low: 'bg-white/[0.10] border border-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.30),inset_0_-1px_0_rgba(255,255,255,0.06),0_12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl backdrop-saturate-[170%]',
+  high: 'bg-white/[0.72] border border-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.9),0_8px_28px_rgba(0,0,0,0.12)] backdrop-blur-2xl backdrop-saturate-[180%]',
+  darkHigh:
+    'bg-white/[0.10] border border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.26),inset_0_-1px_0_rgba(255,255,255,0.05),0_16px_48px_rgba(0,0,0,0.45)] backdrop-blur-2xl backdrop-saturate-[170%]',
   button:
-    'bg-white/10 active:bg-white/25 border border-white/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] backdrop-blur-md backdrop-saturate-150 transition-colors duration-200',
-  tile: 'bg-white/10 border border-white/20 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[10px] backdrop-saturate-[140%]',
+    'bg-white/[0.14] active:bg-white/[0.30] border border-white/[0.30] shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-xl backdrop-saturate-[160%] transition-colors duration-200',
+  tile: 'bg-white/[0.12] border border-white/[0.20] shadow-[inset_0_1px_0_rgba(255,255,255,0.34)] backdrop-blur-xl backdrop-saturate-[160%]',
 } as const;
+
+// Specular sheen overlaid inside glass surfaces — the "liquid" highlight that
+// sells the material. Parent must be relative + overflow-hidden (or use
+// rounded-[inherit] on this layer).
+export const SHEEN =
+  'absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/[0.22] via-white/[0.06] to-transparent pointer-events-none';
 
 export const WALLPAPERS = [
   { id: 'wave-dark', src: '/wallpapers/wave-dark.png', label: 'Wave' },

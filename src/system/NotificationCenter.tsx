@@ -60,7 +60,7 @@ export const NotificationCenter: React.FC = () => {
       onDragEnd={(e, { offset, velocity }) => {
         if (offset.y < -100 || velocity.y < -500) setShade(null);
       }}
-      className="absolute inset-0 z-[200] bg-black/5 backdrop-blur-[6px] backdrop-saturate-[1.2] flex flex-col p-6 pt-16 text-white"
+      className="absolute inset-0 z-[200] bg-black/25 backdrop-blur-[14px] backdrop-saturate-[130%] flex flex-col p-6 pt-16 text-white"
     >
       <div className="flex flex-col items-center mb-8 drop-shadow-md">
         <div className="text-xl font-medium opacity-90 capitalize">{date}</div>
@@ -74,7 +74,7 @@ export const NotificationCenter: React.FC = () => {
             <button
               onClick={() => setNotifs([])}
               aria-label={t('notif.clear')}
-              className="p-2 rounded-full bg-white/10 active:bg-white/25 border border-white/10"
+              className={`p-2 rounded-full ${GLASS.button}`}
             >
               <Trash2 size={16} />
             </button>

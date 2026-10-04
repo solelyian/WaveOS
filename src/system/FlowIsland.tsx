@@ -22,7 +22,7 @@ export const FlowIsland: React.FC = () => {
         initial={false}
         animate={{ width, height, borderRadius: radius }}
         transition={SPRINGS.island}
-        className="bg-black overflow-hidden pointer-events-auto relative shadow-[inset_0_-1px_1px_rgba(255,255,255,0.2),0_10px_30px_rgba(0,0,0,0.5)] border border-white/10"
+        className="bg-black/95 backdrop-blur-xl overflow-hidden pointer-events-auto relative shadow-[inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-1px_1px_rgba(255,255,255,0.2),0_10px_30px_rgba(0,0,0,0.5)] border border-white/15"
         onClick={() => hasActivity && setExpanded(!expanded)}
         role="button"
         aria-label="Activity island"

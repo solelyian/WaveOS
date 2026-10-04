@@ -127,7 +127,10 @@ export const LockScreen: React.FC = () => {
           />
         </div>
         <button
-          onClick={() => setStage('pin')}
+          onClick={() => {
+            unlock();
+            setTimeout(() => openApp('photos'), 250);
+          }}
           aria-label="Camera"
           className={`w-14 h-14 rounded-full ${GLASS.darkHigh} flex items-center justify-center text-white transition-all shadow-lg active:scale-95`}
         >

@@ -66,7 +66,7 @@ export const Keyboard: React.FC = () => {
           animate={{ y: '0%' }}
           exit={{ y: '110%' }}
           transition={SPRINGS.shade}
-          className="absolute bottom-0 inset-x-0 z-[400] bg-[#1c1c1e]/95 backdrop-blur-xl border-t border-white/10 pb-8 pt-2 px-1.5"
+          className="absolute bottom-0 inset-x-0 z-[400] bg-black/55 backdrop-blur-2xl backdrop-saturate-[160%] border-t border-white/15 pb-8 pt-2 px-1.5"
         >
           {/* preview / submit strip */}
           <div className="flex items-center gap-2 px-3 pb-2">
@@ -90,8 +90,8 @@ export const Keyboard: React.FC = () => {
                   onClick={() => setShift(!shift)}
                   aria-label="Shift"
                   aria-pressed={shift}
-                  className={`min-w-[38px] h-[44px] rounded-md flex items-center justify-center ${
-                    shift ? 'bg-white text-black' : 'bg-[#3a3a3c] text-white'
+                  className={`min-w-[38px] h-[44px] rounded-md flex items-center justify-center transition-colors ${
+                    shift ? 'bg-white text-black' : 'bg-white/[0.08] text-white border border-white/10'
                   }`}
                 >
                   <ArrowBigUp size={20} className={shift ? 'fill-black' : ''} />
@@ -101,7 +101,7 @@ export const Keyboard: React.FC = () => {
                 <button
                   key={k}
                   onClick={() => key(k)}
-                  className="flex-1 max-w-[40px] h-[44px] rounded-md bg-[#4a4a4e] text-white text-lg font-medium active:bg-white/80 active:text-black shadow-[0_1px_0_rgba(0,0,0,0.4)]"
+                  className="flex-1 max-w-[40px] h-[44px] rounded-md bg-white/[0.13] border border-white/10 text-white text-lg font-medium active:bg-white/80 active:text-black shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_1px_0_rgba(0,0,0,0.4)] transition-colors"
                 >
                   {shift && !symbols ? k.toUpperCase() : k}
                 </button>
@@ -110,7 +110,7 @@ export const Keyboard: React.FC = () => {
                 <button
                   onClick={() => write(buffer.slice(0, -1))}
                   aria-label="Delete"
-                  className="min-w-[38px] h-[44px] rounded-md bg-[#3a3a3c] text-white flex items-center justify-center active:bg-white/80 active:text-black"
+                  className="min-w-[38px] h-[44px] rounded-md bg-white/[0.08] border border-white/10 text-white flex items-center justify-center active:bg-white/80 active:text-black"
                 >
                   <Delete size={20} />
                 </button>
@@ -121,14 +121,14 @@ export const Keyboard: React.FC = () => {
           <div className="flex justify-center gap-[5px] px-1">
             <button
               onClick={() => setSymbols(!symbols)}
-              className="min-w-[72px] h-[44px] rounded-md bg-[#3a3a3c] text-white text-sm font-medium active:bg-white/80 active:text-black"
+              className="min-w-[72px] h-[44px] rounded-md bg-white/[0.08] border border-white/10 text-white text-sm font-medium active:bg-white/80 active:text-black"
             >
               {symbols ? 'ABC' : '?123'}
             </button>
             <button
               onClick={() => write(buffer + ' ')}
               aria-label="Space"
-              className="flex-1 max-w-[200px] h-[44px] rounded-md bg-[#4a4a4e] active:bg-white/80"
+              className="flex-1 max-w-[200px] h-[44px] rounded-md bg-white/[0.13] border border-white/10 active:bg-white/80"
             />
             <button
               onClick={submit}

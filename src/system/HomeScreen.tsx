@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Sun } from 'lucide-react';
 import { useOS, AppID } from './OSContext';
 import { APPS } from '../apps/registry';
-import { GLASS } from './tokens';
+import { GLASS, SHEEN } from './tokens';
 
 const DOCK: AppID[] = ['phone', 'surf', 'messages', 'music'];
 
@@ -20,11 +20,19 @@ const AppIcon: React.FC<{ id: AppID; compact?: boolean }> = ({ id, compact }) =>
     const measure = () => {
       const el = ref.current;
       if (!el) return;
-      const bezel = el.closest('[data-bezel]');
+      const bezel = el.closest('[data-bezel]') as HTMLElement | null;
       if (!bezel) return;
       const r = el.getBoundingClientRect();
       const b = bezel.getBoundingClientRect();
-      registerIconRect(id, { x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height });
+      // Normalize display px → bezel CSS px so the morph target stays exact
+      // at any browser zoom / devicePixelRatio.
+      const k = bezel.offsetWidth / b.width;
+      registerIconRect(id, {
+        x: (r.left - b.left) * k,
+        y: (r.top - b.top) * k,
+        w: r.width * k,
+        h: r.height * k,
+      });
     };
     measure();
     window.addEventListener('resize', measure);
@@ -58,8 +66,9 @@ const Widget: React.FC<{ onClick?: () => void; className?: string; children: Rea
 }) => (
   <button
     onClick={onClick}
-    className={`col-span-1 h-40 ${GLASS.low} rounded-[28px] p-5 text-white flex flex-col justify-between text-left active:scale-[0.97] transition-transform ${className}`}
+    className={`col-span-1 h-40 ${GLASS.low} rounded-[28px] p-5 text-white flex flex-col justify-between text-left relative overflow-hidden active:scale-[0.97] transition-transform ${className}`}
   >
+    <div className={SHEEN} />
     {children}
   </button>
 );
@@ -102,7 +111,8 @@ export const HomeScreen: React.FC = () => {
       </div>
 
       <div className="mt-auto mb-12 w-full">
-        <div className={`${GLASS.low} rounded-[40px] p-3 flex justify-around items-center`}>
+        <div className={`${GLASS.low} rounded-[40px] p-3 flex justify-around items-center relative overflow-hidden`}>
+          <div className={SHEEN} />
           {DOCK.map((id) => (
             <AppIcon key={id} id={id} compact />
           ))}

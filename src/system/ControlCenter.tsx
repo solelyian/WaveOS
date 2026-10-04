@@ -34,7 +34,7 @@ export const ControlCenter: React.FC = () => {
     `rounded-full flex items-center justify-center transition-colors aspect-square ${
       active
         ? 'bg-wave-cyan text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
-        : 'bg-white/5 text-white/50 border border-white/10'
+        : 'bg-white/10 text-white/60 border border-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]'
     }`;
 
   return (
@@ -48,7 +48,7 @@ export const ControlCenter: React.FC = () => {
       onDragEnd={(e, { offset, velocity }) => {
         if (offset.y < -100 || velocity.y < -500) ctx.setShade(null);
       }}
-      className="absolute inset-0 z-[200] bg-black/5 backdrop-blur-[6px] backdrop-saturate-[1.2] p-6 pt-16 flex flex-col gap-5 text-white"
+      className="absolute inset-0 z-[200] bg-black/25 backdrop-blur-[14px] backdrop-saturate-[130%] p-6 pt-16 flex flex-col gap-5 text-white"
     >
       <div className="grid grid-cols-2 gap-4 h-[160px]">
         {/* Connectivity */}
