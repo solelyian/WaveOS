@@ -6,11 +6,15 @@ export const ACCENT = '#00C2FF'; // WaveOS cyan (from logo)
 export const ACCENT_DEEP = '#0090C8';
 
 export const SPRINGS = {
-  morph: { type: 'spring', stiffness: 400, damping: 28, mass: 0.85, bounce: 0.15 },
+  // Window morphs: long, buttery, critically-damped — no visible bounce on
+  // open/close, content glides as one surface.
+  morph: { type: 'spring', stiffness: 280, damping: 32, mass: 0.9 },
   shade: { type: 'spring', stiffness: 350, damping: 30, mass: 0.8 },
   island: { type: 'spring', stiffness: 400, damping: 30 },
   snappy: { type: 'spring', stiffness: 520, damping: 34 },
   soft: { type: 'spring', stiffness: 260, damping: 26 },
+  // Press feedback on controls: quick in, quick out.
+  tap: { type: 'spring', stiffness: 600, damping: 32 },
 } as const;
 
 // Radius scale — the only radii allowed in the system.
